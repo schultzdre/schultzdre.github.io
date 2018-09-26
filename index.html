@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8" />
+    <link rel='stylesheet' href='sammihelp.css'>
+    <style>
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 100; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        
+        /* Modal Content/Box */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 2% auto; /* 15% from the top and centered */
+            padding: 5px;
+            border: 1px solid #888;
+            width: 90%; /* Could be more or less, depending on screen size */
+        }
+        
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+
+     <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="helpfunctions.js"></script>
+    <!-- <script src="uploaddownload.js"></script> -->
+    <script src="simulationfunctions.js"></script>
+    <!-- <script src="liningfunctions.js"></script> -->
+    <!-- <script src="textandshapes.js"></script> -->
+    <!-- <script src="https://unpkg.com/tippy.js@2.5.2/dist/tippy.all.min.js"></script> -->
+
+    <!-- <script src="node_modules/jspdf-yworks/dist/jspdf.min.js"></script> -->
+    <!-- <script src="node_modules/svg2pdf.js/dist/svg2pdf.min.js"></script> -->
+
+    <!-- Floating Window library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="dialogwindow.js"></script>
+    <script>
+        //http://api.jqueryui.com/dialog/
+        //https://www.w3schools.com/howto/howto_js_draggable.asp
+        $( function() {
+            $("#dialog").dialog({
+            dialogClass: "no-close",
+            minWidth: 400,
+            }).draggable();
+        });
+
+        $( function() {
+            $( "#dialog2" ).dialog({
+            dialogClass: "no-close",
+            minWidth: 600,
+            }).draggable();
+        });
+
+    </script>
+</head>
+
+<body>
+        <div class="dropdown">
+        <button class="dropbtn">Upload/Download</button>
+        <div class="dropdown-content">
+            <h3>Model Uploads</h3>
+            Load single model: <button class='orgbtn' onclick='playvideo("LoadJson")'>Choose File</button><br/>
+            Load model to parse: <button class='orgbtn' onclick='playvideo("LoadJsonToParse")'>Choose File</button><br/>
+            Load SAMMI model: <button class='orgbtn' onclick='playvideo("UploadDownload")'>Choose File</button><br/>
+
+            <h3>Data Uploads</h3>
+            Load Reaction Values: <button class='orgbtn' onclick='playvideo("fluxData")'>Choose File</button><br/>
+            Load Metabolite Values: <button class='orgbtn' onclick='playvideo("concData")'>Choose File</button><br/>
+            Load Secondary Metabolites: <button class='orgbtn' onclick='playvideo("Secondaries")'>Choose File</button>
+
+            <h3>Model Downloads</h3>
+            <button onclick="playvideo('UploadDownload')" class='orgbtn'>Download SAMMI</button><br/>
+            <button onclick="playvideo('downloadCurrent')" class='orgbtn'>Download Current</button><br/>
+            <button id="downloadescher" onclick='playvideo("escher")' class='orgbtn'>Download ESCHER</button><br/>
+            <button id="downloadmez" onclick='playvideo("mev")' class='orgbtn'>Download MetExploreViz</button>
+            <input type="checkbox" id='mezanimated' onclick='playvideo("mev")'> Animated
+
+            <h3>Model Download Parameters</h3>
+            Scale: <input id="eschescale" type="number" min="0" step="1" value="3" onclick="alert('Scaling factor used to expand or contract map upon export.')"><br/>
+            LB Field: <input id="lbfield" type="text" value="lower_bound" onclick="alert('Name of Lower Bound field in the model. Used in map export to determine reaction reversibility.')"><br/>
+            Name Field: <input id="namefield" type="text" value="name" onclick="alert('Name of reaction and metabolite naming field in the model. Used in MetExploreViz model export for node naming.')"><br/>
+            Pathway Field: <input id="pathfield" type="text" value="subsystem" onclick="alert('Name of reaction pathway field in the model. Used in MetExploreViz model export.')"><br/>
+            Compartment Field: <input id="compfield" type="text" value="compartment" onclick="alert('Name of metabolite compartment field in the model. Used in MetExploreViz model export.')">
+
+            <h3>Image Downloads</h3>
+            <button id="savePNG" onclick="playvideo('savePNG')" class='orgbtn'>Save PNG</button><br/>
+            <button id="savePDF" onclick="playvideo('savePDF')" class='orgbtn'>Save PDF</button>
+
+            
+
+            <!-- Load Example: <input type='file' id='fileinputexample' onchange='loadFileExample();'><br/> -->
+        </div>
+        </div>
+
+        <div class="dropdown">
+        <button class="dropbtn">Coloring</button>
+        <div class="dropdown-content">
+                <h3>Graph Coloring</h3>
+                <div style="display:inline-block; position:relative;" onclick="playvideo('fixedColoring')">
+                        <input type="color" id="metcolor" value="#8080ff" disabled> Metabolite<br/>
+                    <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+                </div><br/>
+
+                <div style="display:inline-block; position:relative;" onclick="playvideo('fixedColoring')">
+                    <input type="color" id="rxncolor" value="#1919ff" disabled> Reaction<br/>
+                    <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+                </div><br/>
+
+                <div style="display:inline-block; position:relative;" onclick="playvideo('fixedColoring')">
+                    <input type="color" id="fixmetcolor" value="#ff8080" disabled> Fixed Metabolite<br/>
+                    <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+                </div><br/>
+
+                <div style="display:inline-block; position:relative;" onclick="playvideo('fixedColoring')">
+                    <input type="color" id="fixrxncolor" value="#ff0000" disabled> Fixed Reaction<br/>
+                    <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+                </div><br/>
+
+                <div style="display:inline-block; position:relative;" onclick="playvideo('fixedColoring')">
+                    <input type="color" id="edgecolor" value="#b3b6b7" disabled> Edge
+                    <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+                </div>
+
+                <h3>Reaction Coloring</h3>
+                <input type="number" id="fluxmax" value="1" min="0" onclick="playvideo('addBreakFlux')">
+                <div style="display:inline-block; position:relative;" onclick="playvideo('addBreakFlux')">
+                    <input type="color" id="edgemax" value="#cc3399" disabled>
+                <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+                </div>
+                 - Maximum Flux<br/>
+                <input type="number" id="fluxmin" value="-1" max="0" onclick="playvideo('addBreakFlux')">
+                <div style="display:inline-block; position:relative;" onclick="playvideo('addBreakFlux')">
+                    <input type="color" id="edgemin" value="#009933" disabled>
+                <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+                </div>
+                 - Minimum Flux<br/>
+                <button onclick="playvideo('addBreakFlux')" id="addrxnbreak" class='orgbtn'>Add Break</button><br/>
+                <canvas width="267" height="30" id="fluxcolorbar"></canvas>
+
+                <h3>Metabolite Coloring</h3>
+                <input type="number" id="metminvalue" value="-1" max="0" onclick="playvideo('addBreakConc')">
+
+                <div style="display:inline-block; position:relative;" onclick="playvideo('addBreakConc')">
+                    <input type="color" id="metmin" value="#009933" disabled>
+                <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+                </div>
+                 - Minimum Concentration<br/>
+                
+                <input type="number" id="metmaxvalue" value="1" min="0" onclick="playvideo('addBreakConc')">
+                <div style="display:inline-block; position:relative;" onclick="playvideo('addBreakConc')">
+                    <input type="color" id="metmax" value="#cc3399" disabled>
+                <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+                </div>
+                 - Maximum concentration<br/>
+                <button onclick="playvideo('addBreakConc')" id="addmetbreak" class='orgbtn'>Add Break</button><br/>
+                <canvas width="267" height="30" id="metcolorbar"></canvas>
+                
+                <h3>Position Node Coloring</h3>
+                <div style="display:inline-block; position:relative;" onclick="playvideo('positionColor')">
+                    <input type="color" id="addednodecolor" value="#add8e6" disabled> Position Node
+                    <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+                </div>
+                
+        </div>
+        </div>
+
+        <div class="dropdown">
+            <button class="dropbtn">Settings</button>
+            <div class="dropdown-content">
+                    <h3>Graph Looks</h3>
+                    <input id="labelsize" type="number" value="5" step="1" min="0" onclick="text.style('font-size',this.value + 'px')"> Label Size <b>(Working!)</b><br/>
+                    <input id="addedtextsize" type="number" value="14" step="1" min="0" onchange="alert('Size of descriptive text added to the map.')"> Added Text Size<br/>
+                    <input id="strokewidth" type="number" value="1" step="0.1" min="0" onchange="link.attr('stroke-width',this.valueAsNumber)"> Link Width <b>(Working!)</b><br/>
+                    <input id="nodescale" type="number" value="1" step=".1" min="0" onchange="nodedegree();node.attr('r',function(d){return d.r});" style="width: 40px"> Node size <b>(Working!)</b>
+
+                    <h3>Simulation Parameters</h3>
+                    <input id="linkstrength" type="number" value="30" step="5" min="0" onchange="reDefineSimulationParameters()"> Link Repulsion Strength <b>(Working!)</b><br/>
+                    <input id="nodestrength" type="number" value="0" step="1" min="0" onchange="reDefineSimulationParameters()"> Node Collision Buffer <b>(Working!)</b><br/>
+                    <input id="maparea" type="number" value="30" step="5" min="0" onchange="reDefineSimulationParameters()"> Node Repulsion Strength <b>(Working!)</b><br/>
+                    <input id="centerstrength" type="number" value="0.02" step="0.01" min="0" onchange="reDefineSimulationParameters()"> Center Strength <b>(Working!)</b><br/>
+                    <input id="secondarystrength" type="number" value="0.1" step="0.01" min="0" onclick="alert('Strength with which secondary metabolites are attracted to their estimated position.')"> Secondary Strength<br/>
+                    <input id="shortpathtime" type="number" value="3" step="1" min="0" onclick="alert('Determining long paths in a graph is an NP Hard problem. This sets an upper time limit on the algorithm execution when using the Path (L) function.')"> Path Execution Timeout (s)<br/>
+                    <input id="centersize" type="number" value="0" step="5" min="0" onchange="centerref._groups[0][0].attributes['r'].value = document.getElementById('centersize').value"> Center Size <b>(Working!)</b><br/>
+                    <input id="pretify" type="number" value="40" step="5" min="0" onclick="alert('Size of reactions when using the pretify function')"> Pretify Size
+
+                    <h3>Naming</h3>
+                    <!-- <button onclick="defineNameOptions()">Define Options</button><br/> -->
+                    Metabolites: <select id="metNameOpts" onchange="renameNodes()">
+                        <option>idname</option>
+                        <option>name</option>
+                        <option>formula</option>
+                    </select> <b>(Working!)</b><br/>
+                    Reactions: <select id="rxnNameOpts" onchange="renameNodes()">
+                        <option>idname</option>
+                        <option>name</option>
+                        <option>gene_reaction_rule</option>
+                    </select> <b>(Working!)</b>
+            </div>
+        </div>
+
+        <div style="float:right;">
+            <button onclick='document.documentElement.webkitRequestFullScreen(); setTimeout(windpos,500)' class="menubutton" id="fsbtn">FS</button>
+            <!-- <button onclick='document.webkitExitFullscreen(); setTimeout(windpos,500)' style="width: 160px" class="menubutton" >Exit Full Screen</button> -->
+        </div>
+        
+        <!-- <div>
+            <a id="memlim"></a> / <a id="memuse"></a> / <a id="memuse2"></a>
+        </div> -->
+
+        <div id="dialog" title="Menu">
+            <div id="onloadoptions" style="display:none;">
+                <div id="onloadoption1">
+                    <select id="onloadf1" onchange="onLoadFilter2(this)">
+                        <option><h4>Select Category</h4></option>
+                        <option>Metabolites</option>
+                        <option>Reactions</option>
+                    </select>
+                </div>
+                
+                <div id="onloadoptionmid">
+                    <h4>OR</h4>
+                </div>
+                <div id="onloadoption2">
+                    Load Filter Files: <input type='file' id='filefilter' onchange='loadFilterFiles();' multiple><br/><br/>
+                </div>
+            </div>
+
+            <h4>Arrows: </h4><input type='checkbox' id='arrows' onclick='playvideo("arrows")' checked>
+            <h4>Tooltips: </h4><input type='checkbox' id='tooltipbool' onclick='playvideo("Tooltip")'>
+            <h4>Hide Rxns: </h4><input type='checkbox' id='hiderxns' onclick='playvideo("hideRxns")'><br/>
+            <h4>Move Labels: </h4><input type='checkbox' id='movelabels' onclick='playvideo("moveLabels")'><br/>
+
+            <h4>Current Graph Manipulations:</h4><br/>
+            <button onclick='playvideo("PauseReload")' style="width: 30%" class="menubutton">Reload</button>
+            <button onclick='playvideo("PauseReload")' style="width: 30%" class="menubutton">Pause Sim</button>
+            <button onclick='playvideo("Recenter")' style="width: 30%" class="menubutton">Recenter</button><br/>
+
+            <button onclick='playvideo("Fix")' style="width: 30%" class="menubutton">Fix</button>
+            <button onclick='playvideo("ToggleFix")' style="width: 30%" class="menubutton">Toggle Fix</button><br/>
+
+            <button onclick='playvideo("IsolateRxn")' style="width: 30%" class="menubutton">Isolate Rxn</button>
+            <button onclick='playvideo("IsolateMet")' style="width: 30%" class="menubutton">Isolate Met</button><br/>
+
+            <button onclick='playvideo("Break")' style="width: 30%" class="menubutton">Break</button>
+            <button onclick='playvideo("Join")' style="width: 30%" class="menubutton">Join Met</button>
+            <button onclick='playvideo("Shelve")' style="width: 30%" class="menubutton">Shelve</button><br/>
+
+            <button onclick='playvideo("Delete")' style="width: 30%" class="menubutton">Delete</button>
+            <button onclick='playvideo("Keep")' style="width: 30%" class="menubutton">Keep</button><br/>
+
+
+            <button onclick='playvideo("secondaryPrimary")' style="width: 30%" class="menubutton">Secondary</button>
+            <button onclick='playvideo("secondaryPrimary")' style="width: 30%" class="menubutton">Primary</button><br/>
+
+            <button onclick='playvideo("curve")' style="width: 30%" class="menubutton">Curve</button>
+            <button onclick='playvideo("curvedel")' style="width: 30%" class="menubutton">Del. Curve</button><br/>
+
+            <button onclick='playvideo("groupUngroup")' style="width: 30%" class="menubutton">Group</button>
+            <button onclick='playvideo("groupUngroup")' style="width: 30%" class="menubutton">Ungroup</button><br/>
+
+            <button onclick='playvideo("PathS")' style="width: 30%" class="menubutton">Path (S)</button>   
+            <button onclick='playvideo("PathL")' style="width: 30%" class="menubutton">Path (L)</button>
+            <button onclick='playvideo("PathC")' shortestCircle()" style="width: 30%" class="menubutton">Circle (S)</button> <br/>
+            
+            <button onclick="playvideo('attributes')" style="width: 30%" class="menubutton">Attributes</button>
+            <button onclick="playvideo('reverse')" style="width: 30%" class="menubutton">Reverse</button><br/>
+            
+            <button onclick='playvideo("pretify")' style="width: 30%" class="menubutton">Pretify</button>
+            <button onclick="playvideo('untrap')" style="width: 30%" class="menubutton">Untrap</button> <br/>
+
+            <h4>Subgraph Manipulations</h4><br/>
+            <button onclick="playvideo('JoinSubgraphs')" style="width: 30%" class="menubutton">Join</button>
+            <button onclick="playvideo('Rename')" style="width: 30%" class="menubutton">Rename</button><br/>
+            
+            <h4>Search </h4> <br/> 
+            <div style="display:inline-block; position:relative;" onclick="playvideo('search')">
+                Name: <input id="searchbox" type="text" style="width:120px;" disabled>
+                <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+            </div> <br/>
+            <input type="checkbox" id="searchhighlight" onclick="playvideo('searchhighlight')" checked> highlight
+            <input type="checkbox" id="searchregexp" onclick="playvideo('searchregexp')" checked> RegExp<br/>
+            <button onclick="playvideo('Track')" style="width: 30%" class="menubutton" id="trackmet">Highlight</button><br/>
+
+            <h4>Arranging:</h4><br/>
+            <img src="Thumbnails/vertline.png" width="30" onclick='playvideo("vertLine")' title="Arrange nodes in a vertical line" class="imgbtn"/>
+            <img src="Thumbnails/horzline.png" width="30" onclick='playvideo("horzLine")' title="Arrange nodes in a horizontal line" class="imgbtn"/>
+            <img src="Thumbnails/diagline.png" width="30" onclick='playvideo("diagLine")' title="Arrange nodes in a line" class="imgbtn"/>
+            <img src="Thumbnails/circle.png" width="30" onclick='playvideo("circle")' title="Arrange nodes in a circle" class="imgbtn"/>
+            <img src="Thumbnails/rectangle.png" width="30" onclick='playvideo("rectangle")' title="Arrange nodes in a rectangle" class="imgbtn"/>
+            <img src="Thumbnails/rotate.png" width="30" onclick='playvideo("rotate")' title="Rotate nodes" class="imgbtn"/>
+            <img src="Thumbnails/scale.png" width="30" onclick='playvideo("scale")' title="Scale node position" class="imgbtn"/><br/>
+            <input type="checkbox" id="reverseline" onclick="playvideo('reverseLine')"> Reverse 
+            <select id="orderby">
+                <option value="selection order">Selection Order</option>
+                <option value"position">Position</option>
+            </select><br/>
+
+            <h4>Text and Shapes</h4><br/>
+            <img src="Thumbnails/text.png" width="30" onclick="playvideo('addedText')" id="textingImage" title="Add text (double click to edit)"/>
+            <img src="Thumbnails/shape.png" width="30" onclick="playvideo('shape')" title="Add shape (Drop nodes inside to trap)"/><br/>
+
+            <h4>Shelved Metabolites</h4><br/>
+            <select id="suspended" onchange="this.selectedIndex = 0">
+                <option id="suspendeddefault">Select Node</option>
+            </select><button onclick="playvideo('putAllBack')">Put All Back</button><br/>
+
+            <h4>Commits</h4><br/>
+
+            <div style="display:inline-block; position:relative;" onclick="playvideo('commit')">
+                Name: <input id="commitname" type="text" disabled>
+                <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+            </div>
+            <button id="commitgraph" onclick='playvideo("commit")'>Commit Current</button><br/>
+            <select id="commits">
+                <option id="commitdefault">Select Commit</option>
+            </select><br/>
+            
+            <h4>Add Nodes and Edges: </h4><br/>
+            <div style="display:inline-block; position:relative;" onclick="playvideo('newReaction')">
+                Reaction: <input id="existingReactions" type="text" placeholder="Reaction" style="width:120px">
+                <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+            </div>
+            <div style="display:inline-block; position:relative;" onclick="playvideo('newMetabolite')">
+                Metabolite: <input id="existingMetabolites" type="text" placeholder="Metabolite" style="width:120px">
+                <div style="position:absolute; left:0; right:0; top:0; bottom:0;"></div>
+            </div>
+
+            <button onclick="playvideo('connectSubstrate')">Connect as Substrate</button>
+            <button onclick="playvideo('connectProduct')">Connect as Product</button>
+        </div>
+
+        <div id="dialog2" title="Edit"></div>
+
+    <div id="d3_selectable_force_directed_graph" style="width: 100%; height: 100%;" class="svg-container"></div>
+    <br/>
+
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <!-- <video id="myVideo" width="100%"> -->
+                <!-- <source id="videosource" src="HelpVideos/LoadJson.mp4" type="video/mp4"> -->
+            <!-- </video> -->
+        </div>
+    </div>
+
+    <script>
+
+            function windpos() {
+                document.getElementsByClassName("ui-dialog-content")[0].style = "display:block;";
+                document.getElementsByClassName("ui-dialog-content")[1].style = "display:none;";
+                document.getElementsByClassName("ui-dialog-titlebar")[0].style = "display:block;";
+                document.getElementById("dialog").parentNode.style.left = "10px";
+                document.getElementById("dialog").parentNode.style.top = -window.innerHeight + 5 + "px";
+            }
+            setTimeout(windpos,1000)
+
+            // Get the modal and manage
+            var modal = document.getElementById('myModal');
+            var span = document.getElementsByClassName("close")[0]; 
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+            // Paly the video
+            function playvideo(videoname) {
+                modal.style.display = "block";
+                videoname = "HelpVideos/" + videoname + ".mp4";
+
+                var source = document.createElement("source");
+                source.src = videoname;
+                source.type = "video/mp4"
+
+                //var vid = document.getElementById("myVideo");
+                //while (vid.hasChildNodes()) {vid.firstChild.remove()}
+                //vid.append(source);
+                //vid.play()
+
+                video = document.createElement("video")
+                video.id = "videosource";
+                video.append(source);
+                video.style = "width:100%;"
+
+                while (document.getElementsByClassName("modal-content")[0].childElementCount > 1){
+                    document.getElementsByClassName("modal-content")[0].lastChild.pause();
+                    document.getElementsByClassName("modal-content")[0].lastChild.removeAttribute('src'); // empty source
+                    document.getElementsByClassName("modal-content")[0].lastChild.load();
+                    document.getElementsByClassName("modal-content")[0].lastChild.remove()
+                }
+                document.getElementsByClassName("modal-content")[0].append(video);
+                video.play()
+
+                video.onended = function() {
+                    this.removeAttribute('src'); // empty source
+                    this.load();
+                    span.click();
+                }
+            }
+
+            window.addEventListener("resize", function(){
+                svg.attr("height",d3v4.select('svg').node().parentNode.clientHeight-45);
+                svg.attr("width",d3v4.select('svg').node().parentNode.clientWidth-2);
+                setTimeout(windpos,500)
+            });
+            //document.getElementById("fsbtn").click()
+    </script>
+    <script src="helppagefunctions.js"></script>
+</body>

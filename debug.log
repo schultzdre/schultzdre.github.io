@@ -1,0 +1,6 @@
+[0913/114322.177:ERROR:process_reader_win.cc(242)] ReadMemory at 0x2fccae0 of 72 bytes failed: Only part of a ReadProcessMemory or WriteProcessMemory request was completed. (0x12B)
+[0913/114322.177:WARNING:pe_image_annotations_reader.cc(133)] could not read annotations list object in C:\Program Files (x86)\Google\Chrome\Application\67.0.3396.62\chrome_child.dll
+[0913/124002.958:ERROR:process_reader_win.cc(242)] ReadMemory at 0x2d2c280 of 72 bytes failed: Only part of a ReadProcessMemory or WriteProcessMemory request was completed. (0x12B)
+[0913/124002.960:WARNING:pe_image_annotations_reader.cc(133)] could not read annotations list object in C:\Program Files (x86)\Google\Chrome\Application\67.0.3396.62\chrome_child.dll
+[0914/154903.915:ERROR:process_reader_win.cc(242)] ReadMemory at 0x283c2f0 of 72 bytes failed: Only part of a ReadProcessMemory or WriteProcessMemory request was completed. (0x12B)
+[0914/154903.918:WARNING:pe_image_annotations_reader.cc(133)] could not read annotations list object in C:\Program Files (x86)\Google\Chrome\Application\67.0.3396.62\chrome_child.dll
