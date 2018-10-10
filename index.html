@@ -405,6 +405,7 @@
                 video = document.createElement("video")
                 video.id = "videosource";
                 video.append(source);
+                video.muted = true;
                 video.style = "width:100%;"
 
                 while (document.getElementsByClassName("modal-content")[0].childElementCount > 1){
