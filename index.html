@@ -382,10 +382,16 @@
             var span = document.getElementsByClassName("close")[0]; 
             span.onclick = function() {
                 modal.style.display = "none";
+                var tmp = document.getElementById("videosource");
+                tmp.removeAttribute('src'); // empty source
+                tmp.load();
             }
             window.onclick = function(event) {
                 if (event.target == modal) {
                     modal.style.display = "none";
+                    var tmp = document.getElementById("videosource");
+                    tmp.removeAttribute('src'); // empty source
+                    tmp.load();
                 }
             }
             // Paly the video
@@ -418,8 +424,8 @@
                 video.play()
 
                 video.onended = function() {
-                    this.removeAttribute('src'); // empty source
-                    this.load();
+                    //this.removeAttribute('src'); // empty source
+                    //this.load();
                     span.click();
                 }
             }
